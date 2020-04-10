@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+updated.txt
+config.yaml
+data/

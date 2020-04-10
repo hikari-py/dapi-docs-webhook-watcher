@@ -1,0 +1,7 @@
+version: "3"
+services:
+  poller:
+    build: .
+    restart: always
+    volumes:
+      - ./data:/data
