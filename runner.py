@@ -36,7 +36,7 @@ with open(tracker_path, "a+") as fp:
     last_update = fp.read().strip()
 
     if not last_update:
-        last_update = datetime.datetime.now(tz=datetime.timezone.utc).replace(day=1, month=3).isoformat()
+        last_update = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 
 
 with open(cfg_path) as fp:
