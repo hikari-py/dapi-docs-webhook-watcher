@@ -5,6 +5,7 @@
 import dataclasses
 import email.utils
 import datetime
+import logging
 import os
 import sys
 import time
@@ -16,15 +17,18 @@ import typing
 import yaml
 
 
+logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
+
+
 if len(sys.argv) != 3:
-    print("Please set a config file for the first argument, and a tracking file as the second")
+    logging.info("Please set a config file for the first argument, and a tracking file as the second")
     sys.exit(1)
 
 
 @dataclasses.dataclass()
 class Config:
     webhook_url: str
-    period: float = 60_000
+    period: float = 60
     threads: int = os.cpu_count() or 1
     api_url: str = "https://api.github.com/repos/discord/discord-api-docs/commits"
     params: typing.Dict[str, str] = dataclasses.field(default_factory=lambda: {"sha": "master"})
@@ -49,7 +53,7 @@ while True:
     with requests.get(config.api_url, params=params) as resp:
         resp.raise_for_status()
         data = resp.json()
-        print("GITHUB:", resp.status_code, resp.reason)
+        logging.info("GITHUB: %s %S", resp.status_code, resp.reason)
 
     last_update = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 
@@ -60,14 +64,14 @@ while True:
         # new commits.
         data.sort(key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"]))
 
-        print(f"Iterating across {len(data)} new commits")
+        logging.info(f"Iterating across %s new commits", len(data))
 
         for commit in data:
             commit_detail = commit["commit"]
             committer = commit["committer"]
             author = commit["author"]
 
-            print(f"logging commit {commit_detail['tree']['sha']} by {author['login']} via {committer['login']}")
+            print(f"logging commit %s by %s via %s", commit_detail['tree']['sha'], author['login'], committer['login'])
 
             message = commit_detail["message"].strip() or "No message"
 
@@ -99,13 +103,13 @@ while True:
                         date = email.utils.parsedate_to_datetime(resp.headers["Date"]).timestamp()
                         limit_end = float(resp.headers["X-RateLimit-Reset"])
                         sleep_for = max(0.0, limit_end - date)
-                        print(f"Rate limited, so will wait for {sleep_for}s")
+                        logging.critical("Rate limited, so will wait for %ss", sleep_for)
                         time.sleep(sleep_for)
                         continue
                     resp.raise_for_status()
-                    print("DISCORD:", resp.status_code, resp.reason)
+                    logging.info("DISCORD: %s %s", resp.status_code, resp.reason)
                     break
     else:
-        print("No new commits, going to sleep")
+        logging.info("No new commits, going to sleep")
 
     time.sleep(config.period)
