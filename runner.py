@@ -53,7 +53,7 @@ while True:
     with requests.get(config.api_url, params=params) as resp:
         resp.raise_for_status()
         data = resp.json()
-        logging.info("GITHUB: %s %S", resp.status_code, resp.reason)
+        logging.info("GITHUB: %s %s", resp.status_code, resp.reason)
 
     last_update = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 
