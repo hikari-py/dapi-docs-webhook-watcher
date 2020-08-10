@@ -28,7 +28,7 @@ if len(sys.argv) != 3:
 @dataclasses.dataclass()
 class Config:
     webhook_url: str
-    period: float = 60
+    period: float = 300
     threads: int = os.cpu_count() or 1
     api_url: str = "https://api.github.com/repos/discord/discord-api-docs/commits"
     params: typing.Dict[str, str] = dataclasses.field(default_factory=lambda: {"sha": "master"})
@@ -47,7 +47,7 @@ with open(cfg_path) as fp:
     config = dacite.from_dict(Config, yaml.safe_load(fp))
 
 
-while True:
+def poll() -> None:
     params = {**config.params, "since": last_update}
 
     with requests.get(config.api_url, params=params) as resp:
@@ -113,4 +113,13 @@ while True:
     else:
         logging.info("No new commits, going to sleep")
 
-    time.sleep(config.period)
+
+i = 0
+while True:
+    if i:
+        time.sleep(config.period)
+
+    try:
+        poll()
+    finally:
+        i += 1
