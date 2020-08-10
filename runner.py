@@ -3,17 +3,17 @@
 # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
 
 import dataclasses
-import email.utils
 import datetime
+import email.utils
 import logging
 import os
 import sys
 import time
+import typing
 
 import dacite
 import dateutil.parser
 import requests
-import typing
 import yaml
 
 
@@ -71,7 +71,7 @@ while True:
             committer = commit["committer"]
             author = commit["author"]
 
-            print(f"logging commit %s by %s via %s", commit_detail['tree']['sha'], author['login'], committer['login'])
+            logging.info("logging commit %s by %s via %s", commit_detail['tree']['sha'], author['login'], committer['login'])
 
             message = commit_detail["message"].strip() or "No message"
 
@@ -106,6 +106,7 @@ while True:
                         logging.critical("Rate limited, so will wait for %ss", sleep_for)
                         time.sleep(sleep_for)
                         continue
+
                     resp.raise_for_status()
                     logging.info("DISCORD: %s %s", resp.status_code, resp.reason)
                     break
