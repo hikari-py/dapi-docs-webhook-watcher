@@ -48,6 +48,8 @@ with open(cfg_path) as fp:
 
 
 def poll() -> None:
+    global last_update
+
     params = {**config.params, "since": last_update}
 
     with requests.get(config.api_url, params=params) as resp:
