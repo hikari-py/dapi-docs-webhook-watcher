@@ -12,7 +12,6 @@ def _to_txt(path: pathlib.Path, /) -> pathlib.Path:
     return path.with_name(path.name[:-3] + ".txt")
 
 
-
 _REQUIREMENTS_IN_FILES = [pathlib.Path("./requirements.in"), pathlib.Path("./dev-requirements.in")]
 _REQUIREMENTS_FILES = [_to_txt(path) for path in _REQUIREMENTS_IN_FILES]
 
