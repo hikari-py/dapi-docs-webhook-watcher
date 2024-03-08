@@ -96,19 +96,19 @@ def _poll(
 @click.command()
 @click.argument("webhook_url", envvar="DAPI_TRACKER_WEBHOOK_URL")
 @click.option(
-    "tracker_path",
+    "--tracker-path",
     default="./dapi_tracker_updated",
     envvar="DAPI_TRACKER_PATH",
     type=click.Path(exists=True, path_type=pathlib.Path),
 )
 @click.option("period", envvar="DAPI_TRACKER_PERIOD", type=int, default=300)
 @click.option(
-    "api_url",
+    "--api-url",
     envvar="DAPI_TRACKER_API_URL",
     default="https://api.github.com/repos/discord/discord-api-docs/commits",
 )
 @click.option(
-    "params",
+    "--params",
     envvar="DAPI_TRACKER_PARAMS",
     type=click.Path(exists=True, path_type=pathlib.Path),
     default=None,
