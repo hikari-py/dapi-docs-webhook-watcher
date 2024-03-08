@@ -5,62 +5,37 @@
 import dataclasses
 import datetime
 import email.utils
+import json
 import logging
-import os
-import sys
+import pathlib
 import time
 import typing
 
-import dacite
+import click
 import dateutil.parser
+import dotenv
 import requests
-import yaml
 
 
-logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
+def _now() -> str:
+    return datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 
 
-if len(sys.argv) != 3:
-    logging.info("Please set a config file for the first argument, and a tracking file as the second")
-    sys.exit(1)
+def _poll(
+    webhook_url: str,
+    tracker_path: pathlib.Path,
+    api_url: str,
+    params: typing.Dict[str, str],
+    last_update: str,
+) -> None:
+    params = {**params, "since": last_update}
 
-
-@dataclasses.dataclass()
-class Config:
-    webhook_url: str
-    period: float = 300
-    threads: int = os.cpu_count() or 1
-    api_url: str = "https://api.github.com/repos/discord/discord-api-docs/commits"
-    params: typing.Dict[str, str] = dataclasses.field(default_factory=lambda: {"sha": "master"})
-
-
-cfg_path, tracker_path = sys.argv[1:]
-
-with open(tracker_path, "a+") as fp:
-    last_update = fp.read().strip()
-
-    if not last_update:
-        last_update = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
-
-
-with open(cfg_path) as fp:
-    config = dacite.from_dict(Config, yaml.safe_load(fp))
-
-
-def poll() -> None:
-    global last_update
-
-    params = {**config.params, "since": last_update}
-
-    with requests.get(config.api_url, params=params) as resp:
+    with requests.get(api_url, params=params) as resp:
         resp.raise_for_status()
         data = resp.json()
         logging.info("GITHUB: %s %s", resp.status_code, resp.reason)
 
-    last_update = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
-
-    with open(tracker_path, "w") as fp:
-        fp.write(last_update)
+    tracker_path.write_text(_now())
 
     if len(data) > 0:
         # new commits.
@@ -73,7 +48,9 @@ def poll() -> None:
             committer = commit["committer"]
             author = commit["author"]
 
-            logging.info("logging commit %s by %s via %s", commit_detail['tree']['sha'], author['login'], committer['login'])
+            logging.info(
+                "logging commit %s by %s via %s", commit_detail['tree']['sha'], author['login'], committer['login']
+            )
 
             message = commit_detail["message"].strip() or "No message"
 
@@ -100,7 +77,7 @@ def poll() -> None:
             }
 
             while True:
-                with requests.post(config.webhook_url, json=webhook) as resp:
+                with requests.post(webhook_url, json=webhook) as resp:
                     if resp.status_code == 429:
                         date = email.utils.parsedate_to_datetime(resp.headers["Date"]).timestamp()
                         limit_end = float(resp.headers["X-RateLimit-Reset"])
@@ -116,12 +93,58 @@ def poll() -> None:
         logging.info("No new commits, going to sleep")
 
 
-i = 0
-while True:
-    if i:
-        time.sleep(config.period)
+@click.command()
+@click.argument("webhook_url", envvar="DAPI_TRACKER_WEBHOOK_URL")
+@click.option(
+    "tracker_path",
+    default="./dapi_tracker_updated",
+    envvar="DAPI_TRACKER_PATH",
+    type=click.Path(exists=True, path_type=pathlib.Path),
+)
+@click.option("period", envvar="DAPI_TRACKER_PERIOD", type=int, default=300)
+@click.option(
+    "api_url",
+    envvar="DAPI_TRACKER_API_URL",
+    default="https://api.github.com/repos/discord/discord-api-docs/commits",
+)
+@click.option(
+    "params",
+    envvar="DAPI_TRACKER_PARAMS",
+    type=click.Path(exists=True, path_type=pathlib.Path),
+    default=None,
+)
+def main(
+    webhook_url: str,
+    tracker_path: pathlib.Path,
+    period: int,
+    api_url: str,
+    params: typing.Optional[pathlib.Path],
+):
+    logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
 
-    try:
-        poll()
-    finally:
-        i += 1
+    if params:
+        with params.open("r") as file:
+            params_dict: typing.Dict[str, str] = json.load(file)
+
+    else:
+        params_dict = {"sha": "main"}
+
+    if tracker_path.exists():
+        last_update = tracker_path.read_text().strip() or _now()
+    else:
+        last_update = _now()
+
+    while True:
+        last_update = _poll(
+            webhook_url=webhook_url,
+            tracker_path=tracker_path,
+            api_url=api_url,
+            params=params_dict,
+            last_update=last_update, 
+        )
+        time.sleep(period)
+
+
+if __name__ == "__main__":
+    dotenv.load_dotenv()
+    main()
