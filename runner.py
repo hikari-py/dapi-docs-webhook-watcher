@@ -101,7 +101,7 @@ def _poll(
     envvar="DAPI_TRACKER_PATH",
     type=click.Path(exists=True, path_type=pathlib.Path),
 )
-@click.option("period", envvar="DAPI_TRACKER_PERIOD", type=int, default=300)
+@click.option("--period", envvar="DAPI_TRACKER_PERIOD", type=int, default=300)
 @click.option(
     "--api-url",
     envvar="DAPI_TRACKER_API_URL",
