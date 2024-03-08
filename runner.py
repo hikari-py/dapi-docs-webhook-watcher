@@ -26,13 +26,8 @@ def _poll(
     tracker_path: pathlib.Path,
     api_url: str,
     params: typing.Dict[str, str],
+    last_update: str,
 ) -> None:
-    if tracker_path.exists():
-        last_update = tracker_path.read_text().strip() or _now()
-    else:
-        last_update = _now()
-        tracker_path.write_text(last_update)
-
     params = {**params, "since": last_update}
 
     with requests.get(api_url, params=params) as resp:
@@ -134,12 +129,18 @@ def main(
     else:
         params_dict = {"sha": "main"}
 
+    if tracker_path.exists():
+        last_update = tracker_path.read_text().strip() or _now()
+    else:
+        last_update = _now()
+
     while True:
-        _poll(
+        last_update = _poll(
             webhook_url=webhook_url,
             tracker_path=tracker_path,
             api_url=api_url,
             params=params_dict,
+            last_update=last_update, 
         )
         time.sleep(period)
 
