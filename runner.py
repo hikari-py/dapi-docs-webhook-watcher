@@ -127,7 +127,6 @@ def main(
 ):
     logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
 
-
     if params:
         with params.open("r") as file:
             params_dict: typing.Dict[str, str] = json.load(file)
