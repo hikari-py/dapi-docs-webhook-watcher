@@ -9,3 +9,4 @@ __pycache__/
 updated.txt
 config.yaml
 data/
+.nox/
