@@ -122,7 +122,6 @@ def main(
     webhook_url: str,
     tracker_path: pathlib.Path,
     period: int,
-    threads: int,
     api_url: str,
     params: typing.Optional[pathlib.Path],
 ):
@@ -140,7 +139,6 @@ def main(
         _poll(
             webhook_url=webhook_url,
             tracker_path=tracker_path,
-            threads=threads,
             api_url=api_url,
             params=params_dict,
         )
