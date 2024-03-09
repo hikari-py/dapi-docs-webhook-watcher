@@ -27,7 +27,7 @@ def _poll(
     api_url: str,
     params: typing.Dict[str, str],
     last_update: str,
-) -> None:
+) -> str:
     params = {**params, "since": last_update}
 
     with requests.get(api_url, params=params) as resp:
@@ -35,7 +35,8 @@ def _poll(
         data = resp.json()
         logging.info("GITHUB: %s %s", resp.status_code, resp.reason)
 
-    tracker_path.write_text(_now())
+    last_update = _now()
+    tracker_path.write_text(last_update)
 
     if len(data) > 0:
         # new commits.
@@ -91,6 +92,8 @@ def _poll(
                     break
     else:
         logging.info("No new commits, going to sleep")
+
+    return last_update
 
 
 @click.command()
