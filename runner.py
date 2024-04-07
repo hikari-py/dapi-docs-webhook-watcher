@@ -16,6 +16,7 @@ import dotenv
 import requests
 
 if typing.TYPE_CHECKING:
+
     class PartialActionUser(typing.TypedDict):
         name: str
         email: str
@@ -24,7 +25,6 @@ if typing.TYPE_CHECKING:
     class ActionUser(PartialActionUser):
         avatar_url: str
         login: str
-
 
     class Tree(typing.TypedDict):
         url: str
@@ -43,7 +43,6 @@ if typing.TYPE_CHECKING:
         tree: Tree
         verification: Verification
 
-
     class Commit(typing.TypedDict):
         author: ActionUser
         commit: CommitDetail
@@ -55,13 +54,7 @@ def _now() -> str:
     return datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 
 
-def _poll(
-    webhook_url: str,
-    tracker_path: pathlib.Path,
-    api_url: str,
-    params: dict[str, str],
-    last_update: str,
-) -> str:
+def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: dict[str, str], last_update: str) -> str:
     params = {**params, "since": last_update}
 
     with requests.get(api_url, params=params) as resp:
@@ -77,9 +70,7 @@ def _poll(
         return last_update
 
     # new commits.
-    data.sort(
-        key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"])
-    )
+    data.sort(key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"]))
 
     logging.info(f"Iterating across %s new commits", len(data))
 
@@ -89,10 +80,7 @@ def _poll(
         author = commit["author"]
 
         logging.info(
-            "logging commit %s by %s via %s",
-            commit_detail["tree"]["sha"],
-            author["login"],
-            committer["login"],
+            "logging commit %s by %s via %s", commit_detail["tree"]["sha"], author["login"], committer["login"]
         )
 
         message = commit_detail["message"].strip() or "No message"
@@ -103,27 +91,13 @@ def _poll(
             "content": f"New Discord API documentation change: {commit['html_url']}",
             "embeds": [
                 {
-                    "author": {
-                        "icon_url": author["avatar_url"],
-                        "name": author["login"],
-                    },
+                    "author": {"icon_url": author["avatar_url"], "name": author["login"]},
                     "title": "New commit",
-                    "description": message[:2000]
-                    + ("..." if len(message) > 2000 else ""),
+                    "description": message[:2000] + ("..." if len(message) > 2000 else ""),
                     "timestamp": commit_detail["committer"]["date"],
                     "fields": [
-                        {
-                            "name": "GPG",
-                            "value": commit_detail["verification"][
-                                "reason"
-                            ].title(),
-                            "inline": True,
-                        },
-                        {
-                            "name": "When",
-                            "value": commit_detail["committer"]["date"],
-                            "inline": True,
-                        },
+                        {"name": "GPG", "value": commit_detail["verification"]["reason"].title(), "inline": True},
+                        {"name": "When", "value": commit_detail["committer"]["date"], "inline": True},
                     ],
                 }
             ],
@@ -133,14 +107,10 @@ def _poll(
         while True:
             with requests.post(webhook_url, json=webhook) as resp:
                 if resp.status_code == 429:
-                    date = email.utils.parsedate_to_datetime(
-                        resp.headers["Date"]
-                    ).timestamp()
+                    date = email.utils.parsedate_to_datetime(resp.headers["Date"]).timestamp()
                     limit_end = float(resp.headers["X-RateLimit-Reset"])
                     sleep_for = max(0.0, limit_end - date)
-                    logging.critical(
-                        "Rate limited, so will wait for %ss", sleep_for
-                    )
+                    logging.critical("Rate limited, so will wait for %ss", sleep_for)
                     time.sleep(sleep_for)
                     continue
 
@@ -161,26 +131,13 @@ def _poll(
 )
 @click.option("--period", envvar="DAPI_TRACKER_PERIOD", type=int, default=300)
 @click.option(
-    "--api-url",
-    envvar="DAPI_TRACKER_API_URL",
-    default="https://api.github.com/repos/discord/discord-api-docs/commits",
+    "--api-url", envvar="DAPI_TRACKER_API_URL", default="https://api.github.com/repos/discord/discord-api-docs/commits"
 )
 @click.option(
-    "--params",
-    envvar="DAPI_TRACKER_PARAMS",
-    type=click.Path(exists=True, path_type=pathlib.Path),
-    default=None,
+    "--params", envvar="DAPI_TRACKER_PARAMS", type=click.Path(exists=True, path_type=pathlib.Path), default=None
 )
-def main(
-    webhook_url: str,
-    tracker_path: pathlib.Path,
-    period: int,
-    api_url: str,
-    params: pathlib.Path | None,
-):
-    logging.basicConfig(
-        level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s"
-    )
+def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str, params: pathlib.Path | None):
+    logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
 
     if params:
         with params.open("r") as file:
