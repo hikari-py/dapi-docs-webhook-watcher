@@ -25,7 +25,7 @@ def _poll(
     webhook_url: str,
     tracker_path: pathlib.Path,
     api_url: str,
-    params: typing.Dict[str, str],
+    params: dict[str, str],
     last_update: str,
 ) -> str:
     params = {**params, "since": last_update}
@@ -121,13 +121,13 @@ def main(
     tracker_path: pathlib.Path,
     period: int,
     api_url: str,
-    params: typing.Optional[pathlib.Path],
+    params: pathlib.Path | None,
 ):
     logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
 
     if params:
         with params.open("r") as file:
-            params_dict: typing.Dict[str, str] = json.load(file)
+            params_dict: dict[str, str] = json.load(file)
 
     else:
         params_dict = {"sha": "main"}
