@@ -1,3 +1,30 @@
+[tool.black]
+include = ".*pyi?$"
+line-length = 120
+skip-magic-trailing-comma = true
+target-version = ["py311"]
+
+[tool.flake8]
+accept-encodings = "utf-8"
+count = true
+docstring-convention = "numpy"
+eradicate-aggressive = true
+extend-select = ["TC100", "TC101"]
+force-future-annotations = true
+ignore-decorators = "overload"
+max-complexity = 20
+max-function-length = 100
+# Technically this is 120, but black has a policy of "1 or 2 over is fine if it is tidier", so we have to raise this.
+max-line-length = 130
+min_python_version = "3.9"
+pep585-activation = "always"
+show_source = false
+statistics = false
+
+[tool.isort]
+profile = "black"
+force_single_line = true
+
 [tool.pyright]
 include = ["noxfile.py", "runner.py"]
 
@@ -12,7 +39,6 @@ reportImplicitStringConcatenation = "none"  # Conflicts with flake8 config.
 reportPropertyTypeMismatch = "error"
 reportUninitializedInstanceVariable = "error"
 reportUnnecessaryTypeIgnoreComment = "error"
-
 
 [tool.piped]
 default_sessions = ["reformat", "flake8", "spell-check", "type-check"]
