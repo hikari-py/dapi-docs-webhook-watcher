@@ -2,14 +2,12 @@
 # https://developer.github.com/v3/repos/commits/
 # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
 
-import dataclasses
 import datetime
 import email.utils
 import json
 import logging
 import pathlib
 import time
-import typing
 
 import click
 import dateutil.parser
@@ -40,7 +38,9 @@ def _poll(
 
     if len(data) > 0:
         # new commits.
-        data.sort(key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"]))
+        data.sort(
+            key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"])
+        )
 
         logging.info(f"Iterating across %s new commits", len(data))
 
@@ -50,7 +50,10 @@ def _poll(
             author = commit["author"]
 
             logging.info(
-                "logging commit %s by %s via %s", commit_detail['tree']['sha'], author['login'], committer['login']
+                "logging commit %s by %s via %s",
+                commit_detail["tree"]["sha"],
+                author["login"],
+                committer["login"],
             )
 
             message = commit_detail["message"].strip() or "No message"
@@ -59,31 +62,46 @@ def _poll(
                 "username": f"By {committer['login'][:20]}",
                 "avatar_url": committer["avatar_url"],
                 "content": f"New Discord API documentation change: {commit['html_url']}",
-                "embeds": [{
-                    "author": {
-                        "icon_url": author["avatar_url"],
-                        "name": author["login"]
-                    },
-                    "title": "New commit",
-                    "description": message[:2000] + ("..." if len(message) > 2000 else ""),
-                    "timestamp": commit_detail["committer"]["date"],
-                    "fields": [
-                        {"name": "GPG", "value": commit_detail["verification"]["reason"].title(), "inline": True},
-                        {"name": "When", "value": commit_detail["committer"]["date"], "inline": True},
-                    ]
-                }],
-                "allowed_mentions": {
-                    "parse": []
-                }
+                "embeds": [
+                    {
+                        "author": {
+                            "icon_url": author["avatar_url"],
+                            "name": author["login"],
+                        },
+                        "title": "New commit",
+                        "description": message[:2000]
+                        + ("..." if len(message) > 2000 else ""),
+                        "timestamp": commit_detail["committer"]["date"],
+                        "fields": [
+                            {
+                                "name": "GPG",
+                                "value": commit_detail["verification"][
+                                    "reason"
+                                ].title(),
+                                "inline": True,
+                            },
+                            {
+                                "name": "When",
+                                "value": commit_detail["committer"]["date"],
+                                "inline": True,
+                            },
+                        ],
+                    }
+                ],
+                "allowed_mentions": {"parse": []},
             }
 
             while True:
                 with requests.post(webhook_url, json=webhook) as resp:
                     if resp.status_code == 429:
-                        date = email.utils.parsedate_to_datetime(resp.headers["Date"]).timestamp()
+                        date = email.utils.parsedate_to_datetime(
+                            resp.headers["Date"]
+                        ).timestamp()
                         limit_end = float(resp.headers["X-RateLimit-Reset"])
                         sleep_for = max(0.0, limit_end - date)
-                        logging.critical("Rate limited, so will wait for %ss", sleep_for)
+                        logging.critical(
+                            "Rate limited, so will wait for %ss", sleep_for
+                        )
                         time.sleep(sleep_for)
                         continue
 
@@ -123,7 +141,9 @@ def main(
     api_url: str,
     params: pathlib.Path | None,
 ):
-    logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
+    logging.basicConfig(
+        level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s"
+    )
 
     if params:
         with params.open("r") as file:
@@ -143,7 +163,7 @@ def main(
             tracker_path=tracker_path,
             api_url=api_url,
             params=params_dict,
-            last_update=last_update, 
+            last_update=last_update,
         )
         time.sleep(period)
 
