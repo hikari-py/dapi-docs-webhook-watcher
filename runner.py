@@ -60,7 +60,7 @@ def _now() -> str:
 def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: dict[str, str], last_update: str) -> str:
     params = {**params, "since": last_update}
 
-    with requests.get(api_url, params=params) as resp:
+    with requests.get(api_url, params=params, headers={"X-GitHub-Api-Version": "2022-11-28"}) as resp:
         resp.raise_for_status()
         data = typing.cast("list[Commit]", resp.json())
         logging.info("GITHUB: %s %s", resp.status_code, resp.reason)
