@@ -21,15 +21,18 @@ pep585-activation = "always"
 show_source = false
 statistics = false
 ignore = [
-    "D100",     # Missing docstring in public module
-    "D101",     # Missing docstring in public class
-    "D103",     # Missing docstring in public function
-    "E902",     # TokenError: unterminated string literal (is broken)
-    "S113",     # Requests call without timeout
+    "D100",    # Missing docstring in public module
+    "D101",    # Missing docstring in public class
+    "D103",    # Missing docstring in public function
+    "EXE001",  # Shebang is present but the file is not executable.
+    "E902",    # TokenError: unterminated string literal (is broken)
+    "INP001",  # File is part of an implicit namespace package. Add an __init__.py
+    "S113",    # Requests call without timeout
 ]
 per-file-ignores = [
     # This code cannot be used in ignore due to a bug.
     "*.py: DALL000",  # Module lacks __all__.
+    "noxfile.py: E402, F401, F403",
 ]
 
 [tool.isort]

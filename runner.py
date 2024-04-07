@@ -75,7 +75,7 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
     # new commits.
     data.sort(key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"]))
 
-    logging.info(f"Iterating across %s new commits", len(data))
+    logging.info("Iterating across %s new commits", len(data))
 
     for commit in data:
         commit_detail = commit["commit"]
