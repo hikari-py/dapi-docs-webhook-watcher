@@ -68,13 +68,8 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
     last_update = _now()
     tracker_path.write_text(last_update)
 
-    if len(data) > 0:
-        logging.info("No new commits, going to sleep")
-        return last_update
-
     # new commits.
     data.sort(key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"]))
-
     logging.info("Iterating across %s new commits", len(data))
 
     for commit in data:
