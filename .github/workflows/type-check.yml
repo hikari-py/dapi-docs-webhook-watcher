@@ -1,20 +1,22 @@
-# This is run to avoid an edge case where the latest version of a (probably sub)
-# dependency being yanked leads to pip failing to backtrack the dep.
-# This happened with `cachecontrol==0.12.12 ; python_version >= "3.7" and python_version < "4.0"`.
-name: Verify dependency locks
+name: Type check
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
-    paths: ["dev-requirements/*.txt"]
+  schedule:
+    - cron: "0 12 * * 6"
+  workflow_dispatch:
 
 jobs:
-  verify-pr-dep-changes:
+  type-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,5 +34,5 @@ jobs:
           python -m pip install --upgrade pip wheel
           python -m pip install -r ./piped/python/base-requirements/nox.txt
 
-      - name: Verify dependency locks
-        run: python -m nox -s verify-deps
+      - name: Run type checker
+        run: python -m nox -s type-check

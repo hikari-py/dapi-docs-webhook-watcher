@@ -1,2 +1,0 @@
-nox>=2024.3.2
-pip-compile-cross-platform>=1.1
