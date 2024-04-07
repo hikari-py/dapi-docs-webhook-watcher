@@ -1,6 +1,2 @@
 nox>=2024.3.2
 pip-compile-cross-platform>=1.1
-# These need to be locked temporarily to avoid a bug with pip-compile-cross-platform including warnings in the output lock files.
-poetry-core==1.7.0
-poetry-plugin-export==1.5.0
-poetry==1.6.1
