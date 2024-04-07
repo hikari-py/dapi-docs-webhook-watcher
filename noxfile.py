@@ -29,7 +29,7 @@ def freeze_locks(session: nox.Session) -> None:
             "-o",
             str(target),
             "--min-python-version",
-            "3.8",
+            "3.11",
             str(path),
         )
 
