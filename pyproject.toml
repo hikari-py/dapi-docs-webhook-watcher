@@ -20,6 +20,17 @@ min_python_version = "3.9"
 pep585-activation = "always"
 show_source = false
 statistics = false
+ignore = [
+    "D100",     # Missing docstring in public module
+    "D101",     # Missing docstring in public class
+    "D103",     # Missing docstring in public function
+    "E902",     # TokenError: unterminated string literal (is broken)
+    "S113",     # Requests call without timeout
+]
+per-file-ignores = [
+    # This code cannot be used in ignore due to a bug.
+    "*.py: DALL000",  # Module lacks __all__.
+]
 
 [tool.isort]
 profile = "black"

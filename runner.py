@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # https://developer.github.com/v3/repos/commits/
 # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
+from __future__ import annotations
 
 import datetime
 import email.utils
@@ -146,7 +149,7 @@ def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str
     else:
         params_dict = {"sha": "main"}
 
-    if tracker_path.exists():
+    if tracker_path.exists():  # noqa: IFS001
         last_update = tracker_path.read_text().strip() or _now()
     else:
         last_update = _now()
