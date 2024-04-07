@@ -1,42 +1,37 @@
-import itertools
+# -*- coding: utf-8 -*-
+# BSD 3-Clause License
+#
+# Copyright (c) 2020-2024, Faster Speeding
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import pathlib
+import sys
 
-import nox
+sys.path.insert(0, str(pathlib.Path("./piped/python").absolute()))
 
-
-def _install_dev_deps(session: nox.Session) -> None:
-    session.install("-r", "dev-requirements.txt")
-
-
-def _to_txt(path: pathlib.Path, /) -> pathlib.Path:
-    return path.with_name(path.name[:-3] + ".txt")
-
-
-_REQUIREMENTS_IN_FILES = [pathlib.Path("./requirements.in"), pathlib.Path("./dev-requirements.in")]
-_REQUIREMENTS_FILES = [_to_txt(path) for path in _REQUIREMENTS_IN_FILES]
-
-
-@nox.session(name="freeze-locks", reuse_venv=True)
-def freeze_locks(session: nox.Session) -> None:
-    """Freeze the dependency locks."""
-    _install_dev_deps(session)
-
-    for path in _REQUIREMENTS_IN_FILES:
-        target = _to_txt(path)
-        target.unlink(missing_ok=True)
-        session.run(
-            "pip-compile-cross-platform",
-            "-o",
-            str(target),
-            "--min-python-version",
-            "3.11",
-            str(path),
-        )
-
-
-@nox.session(name="verify-locks", reuse_venv=True)
-def verify_locks(session: nox.Session) -> None:
-    """Verify the dependency locks by installing them."""
-    for path in _REQUIREMENTS_FILES:
-        session.install("--dry-run", "-r", str(path.relative_to(path.parent)))
-
+from noxfile import *

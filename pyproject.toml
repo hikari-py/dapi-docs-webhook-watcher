@@ -1,0 +1,33 @@
+[tool.pyright]
+include = ["noxfile.py", "runner.py"]
+
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportMissingModuleSource = "error"  # Is only "warning" on strict mode.
+
+# Error code which are disabled even when general strict.
+reportShadowedImports = "error"
+reportCallInDefaultInitializer = "none"  # Ended up just complaining about cases where this was fine (e.g. timedeltas).
+reportImplicitStringConcatenation = "none"  # Conflicts with flake8 config.
+reportPropertyTypeMismatch = "error"
+reportUninitializedInstanceVariable = "error"
+reportUnnecessaryTypeIgnoreComment = "error"
+
+
+[tool.piped]
+default_sessions = ["reformat", "flake8", "spell-check", "type-check"]
+hide = ["build", "generate_docs", "publish", "slot-check", "test", "test_coverage", "test_publish", "verify-markup", "verify_types"]
+top_level_targets = ["./noxfile.py", "./runner.py"]
+version_constraint = "3.11,<3.13"
+
+[tool.piped.github_actions."*"]
+default_py_ver = "3.11"
+
+[tool.piped.github_actions.docker_publish]
+[tool.piped.github_actions.freeze_for_pr]
+[tool.piped.github_actions.lint]
+[tool.piped.github_actions.reformat]
+[tool.piped.github_actions.resync_piped]
+[tool.piped.github_actions.type_check]
+[tool.piped.github_actions.update_licence]
+[tool.piped.github_actions.verify_locks]
