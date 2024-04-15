@@ -2,6 +2,10 @@
 
 version: 2
 updates:
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
