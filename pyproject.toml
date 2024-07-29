@@ -11,7 +11,7 @@ docstring-convention = "numpy"
 eradicate-aggressive = true
 extend-select = ["TC100", "TC101"]
 force-future-annotations = true
-ignore-decorators = "overload" 
+ignore-decorators = "overload"
 max-complexity = 20
 max-function-length = 100
 # Technically this is 120, but black has a policy of "1 or 2 over is fine if it is tidier", so we have to raise this.
