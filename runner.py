@@ -150,13 +150,23 @@ def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str
         last_update = _now()
 
     while True:
-        last_update = _poll(
-            webhook_url=webhook_url,
-            tracker_path=tracker_path,
-            api_url=api_url,
-            params=params_dict,
-            last_update=last_update,
-        )
+        try:
+            last_update = _poll(
+                webhook_url=webhook_url,
+                tracker_path=tracker_path,
+                api_url=api_url,
+                params=params_dict,
+                last_update=last_update,
+            )
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+            requests.exceptions.HTTPError,
+            requests.exceptions.JSONDecodeError,
+            requests.exceptions.InvalidJSONError,
+        ) as ex:
+            logging.exception("Failed to fetch latest update, backing off and trying again later", exc_info=ex)
+
         time.sleep(period)
 
 

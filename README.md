@@ -4,4 +4,10 @@ Polls GitHub to notify of any new commits to the API documentation, then sends i
 
 ## Running
 
-Run `docker-compose up -d -e 'DAPI_TRACKER_PATH'='http://discord-webhook-url-here'`.
+Create a file called `.env` in the root of the repository and add:
+
+```
+DAPI_TRACKER_WEBHOOK_URL='<discord-webhook-url-here>'
+```
+
+Then run it using `docker compose up -d`.
