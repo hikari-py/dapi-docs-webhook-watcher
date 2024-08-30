@@ -1,12 +1,22 @@
+# Virtual enviroments
 venv/
 .venv/
+
+# Python cache
 __pycache__/
+
+# Editor configuration files
 .idea/
 *.iml
 .vscode/
 .settings/
 .classpath
+
+# Nox
+.nox/
+
+# Container files
+.env
 updated.txt
 config.yaml
 data/
-.nox/
