@@ -13,7 +13,5 @@ FROM registry.access.redhat.com/ubi9/python-312@sha256:d1244378f7ab72506d8d91cad
 COPY --from=install /code/.venv ./venv
 COPY ./runner.py ./runner.py
 
-RUN pip install -Ur requirements.txt
-
 STOPSIGNAL SIGINT
 ENTRYPOINT ["./venv/bin/python", "runner.py"]
