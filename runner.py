@@ -102,7 +102,7 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
                     ],
                 }
             ],
-            "allowed_mentions": {"parse": list[int]()},    
+            "allowed_mentions": {"parse": list[int]()},
         }
 
         while True:
