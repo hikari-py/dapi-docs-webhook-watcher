@@ -32,6 +32,3 @@ jobs:
 
       - name: Check diff file
         run: nox -s is-diff-file-empty
-
-
-
