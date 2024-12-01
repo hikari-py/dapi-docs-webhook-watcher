@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 # https://developer.github.com/v3/repos/commits/
 # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
 from __future__ import annotations
 
 import datetime
 import email.utils
+import http
 import json
 import logging
 import pathlib
@@ -54,7 +52,10 @@ if typing.TYPE_CHECKING:
 
 
 def _now() -> str:
-    return datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
+    return datetime.datetime.now(tz=datetime.UTC).isoformat()
+
+
+_MAX_DESCRIPTION_LEN = 2000
 
 
 def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: dict[str, str], last_update: str) -> str:
@@ -82,6 +83,8 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
         )
 
         message = commit_detail["message"].strip() or "No message"
+        if len(message) > _MAX_DESCRIPTION_LEN:
+            message = f"{message[:_MAX_DESCRIPTION_LEN]}..."
 
         webhook = {
             "username": f"By {committer['login'][:20]}",
@@ -91,7 +94,7 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
                 {
                     "author": {"icon_url": author["avatar_url"], "name": author["login"]},
                     "title": "New commit",
-                    "description": message[:2000] + ("..." if len(message) > 2000 else ""),
+                    "description": message,
                     "timestamp": commit_detail["committer"]["date"],
                     "fields": [
                         {"name": "GPG", "value": commit_detail["verification"]["reason"].title(), "inline": True},
@@ -99,12 +102,12 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
                     ],
                 }
             ],
-            "allowed_mentions": {"parse": list[int]()},
+            "allowed_mentions": {"parse": list[int]()},    
         }
 
         while True:
             with requests.post(webhook_url, json=webhook) as resp:
-                if resp.status_code == 429:
+                if resp.status_code == http.HTTPStatus.TOO_MANY_REQUESTS:
                     date = email.utils.parsedate_to_datetime(resp.headers["Date"]).timestamp()
                     limit_end = float(resp.headers["X-RateLimit-Reset"])
                     sleep_for = max(0.0, limit_end - date)
@@ -134,7 +137,7 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
 @click.option(
     "--params", envvar="DAPI_TRACKER_PARAMS", type=click.Path(exists=True, path_type=pathlib.Path), default=None
 )
-def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str, params: pathlib.Path | None):
+def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str, params: pathlib.Path | None) -> None:
     logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
 
     if params:
@@ -144,10 +147,9 @@ def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str
     else:
         params_dict = {"sha": "main"}
 
-    if tracker_path.exists():  # noqa: IFS001
-        last_update = tracker_path.read_text().strip() or _now()
-    else:
-        last_update = _now()
+    last_update = _now()
+    if tracker_path.exists():
+        last_update = tracker_path.read_text().strip()
 
     while True:
         try:

@@ -77,12 +77,19 @@ default_py_ver = "3.11"
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
+    "COM812",  # Trailing comma missing (incompatible with black)
     "D100",    # Missing docstring in public module
     "D101",    # Missing docstring in public class
     "D102",    # Missing docstring in public method
     "D103",    # Missing docstring in public function
     "D105",    # Missing docstring in magic method
     "INP001",  # File `` is part of an implicit namespace package. Add an `__init__.py`.
+    "S113",    # Probable use of `requests` call without timeout
+]
+
+[tool.ruff.lint.per-file-ignores]
+"noxfile.py" = [
+    "F403",    # `from noxfile import *` used; unable to detect undefined name
 ]
 
 [tool.ruff.lint.mccabe]

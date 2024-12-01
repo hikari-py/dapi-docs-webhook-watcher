@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+"""Development tasks implemented by Piped."""
+
 from __future__ import annotations
 
 import pathlib
