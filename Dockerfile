@@ -1,11 +1,17 @@
-FROM python:3.13-alpine
+FROM registry.access.redhat.com/ubi9/python-312@sha256:d1244378f7ab72506d8d91cadebbf94c893c2828300f9d44aee4678efec62db9 AS install
 
 WORKDIR /code
 
-COPY ./runner.py ./runner.py
-COPY ./dev-requirements/constraints.txt ./requirements.txt
+COPY ./pyproject.toml ./
+COPY ./uv.lock ./
 
-RUN pip install -Ur requirements.txt
+RUN pip install uv && \
+    uv sync --frozen --only-group main
+
+FROM registry.access.redhat.com/ubi9/python-312@sha256:d1244378f7ab72506d8d91cadebbf94c893c2828300f9d44aee4678efec62db9
+
+COPY --from=install /code/.venv ./venv
+COPY ./runner.py ./runner.py
 
 STOPSIGNAL SIGINT
-ENTRYPOINT ["python", "runner.py"]
+ENTRYPOINT ["./venv/bin/python", "runner.py"]

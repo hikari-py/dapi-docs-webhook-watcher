@@ -1,39 +1,43 @@
+[project]
+name = "dapi-docs-webhook-watcher"
+description = "Discord API webhook poller for Discord"
+requires-python = ">=3.11,<3.13"
+version = "0.1"
+
+[dependency-groups]
+main = [
+    "click",
+    "requests",
+    "python-dateutil",
+    "python-dotenv",
+]
+freeze-locks = ["uv"]
+lint = [
+    "codespell>=2.2.2",
+    "pre-commit-hooks>=4.4",
+    "slotscheck>=0.16.1",
+    "ruff",
+]
+reformat = [
+    "black>=22.10.0",
+    "isort>=5.11.3",
+    "pre-commit-hooks>=4.4",
+    "pycln>=2.1.2",
+    "sort-all>=1.2",
+]
+templating = ["Jinja2>=3.1.2"]
+type-checking = [
+    "mypy>=0.991",
+    "nox",
+    "pyright>=1.1.285",
+    {include-group = "main"},
+]
+
 [tool.black]
 include = ".*pyi?$"
 line-length = 120
 skip-magic-trailing-comma = true
 target-version = ["py311"]
-
-[tool.flake8]
-accept-encodings = "utf-8"
-count = true
-docstring-convention = "numpy"
-eradicate-aggressive = true
-extend-select = ["TC100", "TC101"]
-force-future-annotations = true
-ignore-decorators = "overload"
-max-complexity = 20
-max-function-length = 100
-# Technically this is 120, but black has a policy of "1 or 2 over is fine if it is tidier", so we have to raise this.
-max-line-length = 130
-min_python_version = "3.9"
-pep585-activation = "always"
-show_source = false
-statistics = false
-ignore = [
-    "D100",    # Missing docstring in public module
-    "D101",    # Missing docstring in public class
-    "D103",    # Missing docstring in public function
-    "EXE001",  # Shebang is present but the file is not executable.
-    "E902",    # TokenError: unterminated string literal (is broken)
-    "INP001",  # File is part of an implicit namespace package. Add an __init__.py
-    "S113",    # Requests call without timeout
-]
-per-file-ignores = [
-    # This code cannot be used in ignore due to a bug.
-    "*.py: DALL000",  # Module lacks __all__.
-    "noxfile.py: E402, F401, F403",
-]
 
 [tool.isort]
 profile = "black"
@@ -49,16 +53,15 @@ reportMissingModuleSource = "error"  # Is only "warning" on strict mode.
 # Error code which are disabled even when general strict.
 reportShadowedImports = "error"
 reportCallInDefaultInitializer = "none"  # Ended up just complaining about cases where this was fine (e.g. timedeltas).
-reportImplicitStringConcatenation = "none"  # Conflicts with flake8 config.
+reportImplicitStringConcatenation = "none"  # Conflicts with Ruff config.
 reportPropertyTypeMismatch = "error"
 reportUninitializedInstanceVariable = "error"
 reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.piped]
-default_sessions = ["reformat", "flake8", "spell-check", "type-check"]
+default_sessions = ["reformat", "lint", "spell-check", "type-check"]
 hide = ["build", "generate_docs", "publish", "slot-check", "test", "test_coverage", "test_publish", "verify-markup", "verify_types"]
 top_level_targets = ["./noxfile.py", "./runner.py"]
-version_constraint = "3.11,<3.13"
 
 [tool.piped.github_actions."*"]
 default_py_ver = "3.11"
@@ -70,4 +73,37 @@ default_py_ver = "3.11"
 [tool.piped.github_actions.resync_piped]
 [tool.piped.github_actions.type_check]
 [tool.piped.github_actions.upgrade_locks]
-[tool.piped.github_actions.verify_locks]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "COM812",  # Trailing comma missing (incompatible with black)
+    "D100",    # Missing docstring in public module
+    "D101",    # Missing docstring in public class
+    "D102",    # Missing docstring in public method
+    "D103",    # Missing docstring in public function
+    "D105",    # Missing docstring in magic method
+    "INP001",  # File `` is part of an implicit namespace package. Add an `__init__.py`.
+    "S113",    # Probable use of `requests` call without timeout
+]
+
+[tool.ruff.lint.per-file-ignores]
+"noxfile.py" = [
+    "F403",    # `from noxfile import *` used; unable to detect undefined name
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.ruff.lint.pycodestyle]
+# Technically this is 120, but black has a policy of "1 or 2 over is fine if it is tidier", so we have to raise this.
+max-line-length = 130
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.pylint]
+max-args = 20
+max-branches = 20
+max-returns = 15
+max-statements = 100
