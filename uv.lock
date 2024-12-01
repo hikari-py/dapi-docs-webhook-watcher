@@ -156,9 +156,13 @@ templating = [
     { name = "jinja2" },
 ]
 type-checking = [
+    { name = "click" },
     { name = "mypy" },
     { name = "nox" },
     { name = "pyright" },
+    { name = "python-dateutil" },
+    { name = "python-dotenv" },
+    { name = "requests" },
 ]
 
 [package.metadata]
@@ -186,9 +190,13 @@ reformat = [
 ]
 templating = [{ name = "jinja2", specifier = ">=3.1.2" }]
 type-checking = [
+    { name = "click" },
     { name = "mypy", specifier = ">=0.991" },
     { name = "nox" },
     { name = "pyright", specifier = ">=1.1.285" },
+    { name = "python-dateutil" },
+    { name = "python-dotenv" },
+    { name = "requests" },
 ]
 
 [[package]]
