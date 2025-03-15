@@ -1,10 +1,7 @@
 name: Docker
 
 on:
-  schedule:
-    - cron: "00 14 1 * *"
   push:
-    branches: ["master"]
     # Publish semver tags as releases.
     tags: ["v*.*.*"]
   pull_request:
@@ -35,6 +32,11 @@ jobs:
       - name: Install cosign
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
+
+      # Set up QEMU to allow BuildKit to build for multiple architectures
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
