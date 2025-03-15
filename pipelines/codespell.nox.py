@@ -20,12 +20,21 @@
 # SOFTWARE.
 from __future__ import annotations
 
-import pathlib
-import runpy
-import sys
+from pipelines import config
+from pipelines import nox
 
-sys.path.append(".")
+IGNORED_WORDS: list[str] = []
 
-ci_path = pathlib.Path("pipelines")
-for f in ci_path.glob("*.nox.py"):
-    runpy.run_path(str(f))
+
+@nox.session()
+def codespell(session: nox.Session) -> None:
+    """Run codespell to check for spelling mistakes."""
+    nox.sync(session, groups=["codespell"])
+    session.run(
+        "codespell",
+        "--builtin",
+        "clear,rare,code",
+        "--ignore-words-list",
+        ",".join(IGNORED_WORDS),
+        *config.FULL_REFORMATTING_PATHS,
+    )

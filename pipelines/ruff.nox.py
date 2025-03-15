@@ -20,12 +20,13 @@
 # SOFTWARE.
 from __future__ import annotations
 
-import pathlib
-import runpy
-import sys
+from pipelines import config
+from pipelines import nox
 
-sys.path.append(".")
 
-ci_path = pathlib.Path("pipelines")
-for f in ci_path.glob("*.nox.py"):
-    runpy.run_path(str(f))
+@nox.session()
+def ruff(session: nox.Session) -> None:
+    """Lint code using ruff."""
+    nox.sync(session, groups=["ruff"])
+
+    session.run("ruff", "check", "--fix", *config.PYTHON_REFORMATTING_PATHS)

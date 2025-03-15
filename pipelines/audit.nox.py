@@ -18,14 +18,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+"""Dependency scanning."""
+
 from __future__ import annotations
 
-import pathlib
-import runpy
-import sys
+from pipelines import nox
 
-sys.path.append(".")
 
-ci_path = pathlib.Path("pipelines")
-for f in ci_path.glob("*.nox.py"):
-    runpy.run_path(str(f))
+@nox.session()
+def audit(session: nox.Session) -> None:
+    """Perform dependency scanning."""
+    nox.sync(session, groups=["audit"])
+    session.run("uv-secure", "--forbid-yanked", "--desc", "--aliases")

@@ -20,12 +20,13 @@
 # SOFTWARE.
 from __future__ import annotations
 
-import pathlib
-import runpy
-import sys
+from pipelines import config
+from pipelines import nox
 
-sys.path.append(".")
 
-ci_path = pathlib.Path("pipelines")
-for f in ci_path.glob("*.nox.py"):
-    runpy.run_path(str(f))
+@nox.session()
+def mypy(session: nox.Session) -> None:
+    """Perform static type analysis on Python source code using mypy."""
+    nox.sync(session, self=True, groups=["mypy"])
+
+    session.run("mypy", config.SCRIPT_NAME, "--config", config.PYPROJECT_TOML)

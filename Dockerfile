@@ -1,17 +1,26 @@
-FROM registry.access.redhat.com/ubi9/python-312@sha256:7eff0198911e53c3c67634e82e6c156e3bd491149721e998280f104b7a185772 AS install
+FROM ghcr.io/astral-sh/uv:python3.13-alpine@sha256:8c6632ee7dfc7f02bc11937ab75992de80a5101bd5287ba8f886818c4d3e2cfb AS builder
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
-WORKDIR /code
+# Disable Python downloads, because we want to use the system interpreter
+# across both images. If using a managed Python version, it needs to be
+# copied from the build image into the final image
+ENV UV_PYTHON_DOWNLOADS=0
 
-COPY ./pyproject.toml ./
-COPY ./uv.lock ./
+WORKDIR /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
+COPY . /app
 
-RUN pip install uv && \
-    uv sync --frozen --only-group main
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
-FROM registry.access.redhat.com/ubi9/python-312@sha256:7eff0198911e53c3c67634e82e6c156e3bd491149721e998280f104b7a185772
+FROM docker.io/python:3.13-alpine@sha256:323a717dc4a010fee21e3f1aac738ee10bb485de4e7593ce242b36ee48d6b352
 
-COPY --from=install /code/.venv ./venv
-COPY ./runner.py ./runner.py
+COPY --from=builder --chown=app:app /app /app
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 STOPSIGNAL SIGINT
-ENTRYPOINT ["./venv/bin/python", "runner.py"]
+ENTRYPOINT ["python", "/app/runner.py"]
