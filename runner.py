@@ -1,3 +1,23 @@
+# Copyright (c) 2025-present davfsa
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 # https://developer.github.com/v3/repos/commits/
 # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
 from __future__ import annotations
@@ -56,6 +76,7 @@ def _now() -> str:
 
 
 _MAX_DESCRIPTION_LEN = 2000
+_LOGGER = logging.getLogger("watcher")
 
 
 def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: dict[str, str], last_update: str) -> str:
@@ -64,21 +85,21 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
     with requests.get(api_url, params=params, headers={"X-GitHub-Api-Version": "2022-11-28"}) as resp:
         resp.raise_for_status()
         data = typing.cast("list[Commit]", resp.json())
-        logging.info("GITHUB: %s %s", resp.status_code, resp.reason)
+        _LOGGER.info("GITHUB: %s %s", resp.status_code, resp.reason)
 
     last_update = _now()
     tracker_path.write_text(last_update)
 
     # new commits.
     data.sort(key=lambda ref: dateutil.parser.parse(ref["commit"]["committer"]["date"]))
-    logging.info("Iterating across %s new commits", len(data))
+    _LOGGER.info("Iterating across %s new commits", len(data))
 
     for commit in data:
         commit_detail = commit["commit"]
         committer = commit["committer"]
         author = commit["author"]
 
-        logging.info(
+        _LOGGER.info(
             "logging commit %s by %s via %s", commit_detail["tree"]["sha"], author["login"], committer["login"]
         )
 
@@ -111,12 +132,12 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
                     date = email.utils.parsedate_to_datetime(resp.headers["Date"]).timestamp()
                     limit_end = float(resp.headers["X-RateLimit-Reset"])
                     sleep_for = max(0.0, limit_end - date)
-                    logging.critical("Rate limited, so will wait for %ss", sleep_for)
+                    _LOGGER.critical("Rate limited, so will wait for %ss", sleep_for)
                     time.sleep(sleep_for)
                     continue
 
                 resp.raise_for_status()
-                logging.info("DISCORD: %s %s", resp.status_code, resp.reason)
+                _LOGGER.info("DISCORD: %s %s", resp.status_code, resp.reason)
                 break
 
     return last_update
@@ -135,7 +156,7 @@ def _poll(webhook_url: str, tracker_path: pathlib.Path, api_url: str, params: di
     "--api-url", envvar="DAPI_TRACKER_API_URL", default="https://api.github.com/repos/discord/discord-api-docs/commits"
 )
 @click.option(
-    "--params", envvar="DAPI_TRACKER_PARAMS", type=click.Path(exists=True, path_type=pathlib.Path), default=None
+    "--params", envvar="DAPI_TRACKER_PARAMS_PATH", type=click.Path(exists=True, path_type=pathlib.Path), default=None
 )
 def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str, params: pathlib.Path | None) -> None:
     logging.basicConfig(level="INFO", format="%(asctime)23.23s %(levelname)1.1s %(message)s")
@@ -147,9 +168,7 @@ def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str
     else:
         params_dict = {"sha": "main"}
 
-    last_update = _now()
-    if tracker_path.exists():
-        last_update = tracker_path.read_text().strip()
+    last_update = tracker_path.read_text().strip() if tracker_path.exists() else _now()
 
     while True:
         try:
@@ -167,7 +186,7 @@ def main(webhook_url: str, tracker_path: pathlib.Path, period: int, api_url: str
             requests.exceptions.JSONDecodeError,
             requests.exceptions.InvalidJSONError,
         ) as ex:
-            logging.exception("Failed to fetch latest update, backing off and trying again later", exc_info=ex)
+            _LOGGER.exception("Failed to fetch latest update, backing off and trying again later", exc_info=ex)
 
         time.sleep(period)
 

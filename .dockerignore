@@ -1,3 +1,12 @@
+.git
+.github
+.mypy_cache
+.nox
+.ruff_cache
+venv
+.venv
+__pycache__/
+
 config.yaml
 updated.txt
 data/

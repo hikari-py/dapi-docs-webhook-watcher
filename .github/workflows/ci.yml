@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
+        with:
+          python-version: 3.13
+
+      - name: Install nox
+        run: |
+          uv sync --frozen --only-group nox
+
+      - name: Audit
+        if: always() && !cancelled()
+        run: |
+          nox -s audit
+
+      - name: Mypy
+        if: always() && !cancelled()
+        run: |
+          nox -s mypy
+
+      - name: Pyright
+        if: always() && !cancelled()
+        run: |
+          nox -s pyright
+
+      - name: Ruff
+        if: always() && !cancelled()
+        run: |
+          nox -s ruff
+
+      - name: Codespell
+        if: always() && !cancelled()
+        run: |
+          nox -s codespell
+
+      - name: Check trailing whitespaces
+        if: always() && !cancelled()
+        run: |
+          nox -s check-trailing-whitespaces

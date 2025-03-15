@@ -1,96 +1,72 @@
 [project]
 name = "dapi-docs-webhook-watcher"
 description = "Discord API webhook poller for Discord"
-requires-python = ">=3.11,<3.13"
+requires-python = "~=3.13"
 version = "0.1"
+dependencies = [
+    "click~=8.1",
+    "requests~=2.32",
+    "python-dateutil~=2.9",
+    "python-dotenv~=1.0",
+]
 
 [dependency-groups]
-main = [
-    "click",
-    "requests",
-    "python-dateutil",
-    "python-dotenv",
-]
-freeze-locks = ["uv"]
-lint = [
-    "codespell>=2.2.2",
-    "pre-commit-hooks>=4.4",
-    "slotscheck>=0.16.1",
-    "ruff",
-]
-reformat = [
-    "black>=22.10.0",
-    "isort>=5.11.3",
-    "pre-commit-hooks>=4.4",
-    "pycln>=2.1.2",
-    "sort-all>=1.2",
-]
-templating = ["Jinja2>=3.1.2"]
-type-checking = [
-    "mypy>=0.991",
-    "nox",
-    "pyright>=1.1.285",
-    {include-group = "main"},
-]
+nox = ["nox[uv]==2025.2.9"]
 
-[tool.black]
-include = ".*pyi?$"
-line-length = 120
-skip-magic-trailing-comma = true
-target-version = ["py311"]
+audit = ["uv-secure"]
+codespell = ["codespell==2.4.1"]
+ruff = ["ruff==0.11.0"]
 
-[tool.isort]
-profile = "black"
-force_single_line = true
+types = ["types-requests", "types-python-dateutil"]
+mypy = ["mypy[faster-cache]==1.15.0", { include-group = "types" }]
+pyright = ["pyright==1.1.396", { include-group = "types" }]
+
+[tool.uv]
+required-version = "~=0.6"
 
 [tool.pyright]
-include = ["noxfile.py", "runner.py"]
+include = ["noxfile.py", "runner.py", "pipelines"]
 
-pythonVersion = "3.11"
+pythonVersion = "3.13"
 typeCheckingMode = "strict"
-reportMissingModuleSource = "error"  # Is only "warning" on strict mode.
+reportMissingModuleSource = "error" # Is only "warning" on strict mode.
 
 # Error code which are disabled even when general strict.
 reportShadowedImports = "error"
-reportCallInDefaultInitializer = "none"  # Ended up just complaining about cases where this was fine (e.g. timedeltas).
-reportImplicitStringConcatenation = "none"  # Conflicts with Ruff config.
+reportCallInDefaultInitializer = "none"       # Ended up just complaining about cases where this was fine (e.g. timedeltas).
+reportImplicitStringConcatenation = "none"    # Conflicts with Ruff config.
 reportPropertyTypeMismatch = "error"
 reportUninitializedInstanceVariable = "error"
 reportUnnecessaryTypeIgnoreComment = "error"
 
-[tool.piped]
-default_sessions = ["reformat", "lint", "spell-check", "type-check"]
-hide = ["build", "generate_docs", "publish", "slot-check", "test", "test_coverage", "test_publish", "verify-markup", "verify_types"]
-top_level_targets = ["./noxfile.py", "./runner.py"]
+[tool.ruff]
+line-length = 120
+target-version = "py313"
 
-[tool.piped.github_actions."*"]
-default_py_ver = "3.11"
-
-[tool.piped.github_actions.docker_publish]
-[tool.piped.github_actions.freeze_for_pr]
-[tool.piped.github_actions.lint]
-[tool.piped.github_actions.reformat]
-[tool.piped.github_actions.resync_piped]
-[tool.piped.github_actions.type_check]
-[tool.piped.github_actions.upgrade_locks]
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "double"
+line-ending = "lf"
+skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "COM812",  # Trailing comma missing (incompatible with black)
-    "D100",    # Missing docstring in public module
-    "D101",    # Missing docstring in public class
-    "D102",    # Missing docstring in public method
-    "D103",    # Missing docstring in public function
-    "D105",    # Missing docstring in magic method
-    "INP001",  # File `` is part of an implicit namespace package. Add an `__init__.py`.
-    "S113",    # Probable use of `requests` call without timeout
+    "D100",   # Missing docstring in public module
+    "D101",   # Missing docstring in public class
+    "D102",   # Missing docstring in public method
+    "D103",   # Missing docstring in public function
+    "D105",   # Missing docstring in magic method
+    "INP001", # File `` is part of an implicit namespace package. Add an `__init__.py`.
+    "S113",   # Probable use of `requests` call without timeout
+    "EM101",  # Do not specify long error messages in exception constructor
+    "TRY003", # Specify error message as part of exception
+    "COM812", # Can interfiere with the formatter
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"noxfile.py" = [
-    "F403",    # `from noxfile import *` used; unable to detect undefined name
-]
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
+force-single-line = true
 
 [tool.ruff.lint.mccabe]
 max-complexity = 20
