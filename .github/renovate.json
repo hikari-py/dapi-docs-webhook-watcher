@@ -6,5 +6,8 @@
         ":semanticCommitsDisabled"
     ],
     "dependencyDashboard": false,
+    "lockFileMaintenance": {
+        "enabled": true
+    },
     "prHourlyLimit": 5
 }
