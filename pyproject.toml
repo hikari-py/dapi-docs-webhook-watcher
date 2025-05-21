@@ -26,6 +26,7 @@ required-version = "~=0.6"
 
 [tool.pyright]
 include = ["noxfile.py", "runner.py", "pipelines"]
+ignore = [".nox", ".venv"]
 
 pythonVersion = "3.13"
 typeCheckingMode = "strict"
