@@ -15,7 +15,7 @@ nox = ["nox[uv]==2025.5.1"]
 
 audit = ["uv-secure"]
 codespell = ["codespell==2.4.1"]
-ruff = ["ruff==0.11.12"]
+ruff = ["ruff==0.11.13"]
 
 types = ["types-requests", "types-python-dateutil"]
 mypy = ["mypy[faster-cache]==1.16.0", { include-group = "types" }]
