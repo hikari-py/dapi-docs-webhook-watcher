@@ -19,7 +19,7 @@ ruff = ["ruff==0.11.13"]
 
 types = ["types-requests", "types-python-dateutil"]
 mypy = ["mypy[faster-cache]==1.16.0", { include-group = "types" }]
-pyright = ["pyright==1.1.401", { include-group = "types" }]
+pyright = ["pyright==1.1.402", { include-group = "types" }]
 
 [tool.uv]
 required-version = "~=0.6"
