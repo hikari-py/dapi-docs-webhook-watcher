@@ -16,7 +16,7 @@ COPY . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
-FROM docker.io/python:3.13-alpine@sha256:d005934d99924944e826dc659c749b775965b21968b1ddb10732f738682db869
+FROM docker.io/python:3.13-alpine@sha256:610020b9ad8ee92798f1dbe18d5e928d47358db698969d12730f9686ce3a3191
 
 COPY --from=builder --chown=app:app /app /app
 
