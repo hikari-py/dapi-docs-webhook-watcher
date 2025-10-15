@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-nox = ["nox[uv]==2025.5.1"]
+nox = ["nox[uv]==2025.10.14"]
 
 audit = ["uv-secure"]
 codespell = ["codespell==2.4.1"]
