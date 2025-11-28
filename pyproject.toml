@@ -18,7 +18,7 @@ codespell = ["codespell==2.4.1"]
 ruff = ["ruff==0.14.6"]
 
 types = ["types-requests", "types-python-dateutil"]
-mypy = ["mypy[faster-cache]==1.18.2", { include-group = "types" }]
+mypy = ["mypy[faster-cache]==1.19.0", { include-group = "types" }]
 pyright = ["pyright==1.1.407", { include-group = "types" }]
 
 [tool.uv]
