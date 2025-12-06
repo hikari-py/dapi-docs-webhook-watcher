@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.13-alpine@sha256:907fd56c563c1880e3529ea570e299c61102bcfb5010aeb7d04424cea09df5ec AS builder
+FROM ghcr.io/astral-sh/uv:python3.13-alpine@sha256:4a4085126e0d4e6f2b791166b1b3376e2831dec990dc27484785b949b73e53f8 AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 # Disable Python downloads, because we want to use the system interpreter
