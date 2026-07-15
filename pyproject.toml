@@ -14,7 +14,7 @@ dependencies = [
 nox = ["nox[uv]==2025.11.12"]
 
 audit = ["uv-secure"]
-codespell = ["codespell==2.4.1"]
+codespell = ["codespell==2.4.3"]
 ruff = ["ruff==0.14.8"]
 
 types = ["types-requests", "types-python-dateutil"]
